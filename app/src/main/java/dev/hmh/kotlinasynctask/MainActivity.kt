@@ -1,5 +1,6 @@
 package dev.hmh.kotlinasynctask
 
+import android.annotation.SuppressLint
 import android.app.ProgressDialog
 import android.os.AsyncTask
 import android.os.Bundle
@@ -40,6 +41,7 @@ class MainActivity : AppCompatActivity() {
         BackgroundGetCityTask().execute("https://aampower.app/data/getcity.aspx")
     }
 
+    @SuppressLint("StaticFieldLeak")
     private inner class BackgroundGetCityTask : AsyncTask<String?, Void?, String?>() {
         override fun onPreExecute() {
             super.onPreExecute()
@@ -49,13 +51,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun doInBackground(vararg strings: String?): String? {
-            var connection: HttpURLConnection? = null
-            var url: URL? = null
+
             try {
-                url = URL(strings[0])
-                connection = url.openConnection() as HttpURLConnection
+                val url = URL(strings[0])
+                val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "POST"
-                connection!!.doOutput = true
+                connection.doOutput = true
+
                 val inputStream = connection.inputStream
                 val bufferedReader = BufferedReader(InputStreamReader(inputStream, "UTF-8"))
                 val stringBuffer = StringBuffer()
@@ -63,41 +65,40 @@ class MainActivity : AppCompatActivity() {
                 while (bufferedReader.readLine().also { line = it } != null) {
                     stringBuffer.append(line)
                 }
-                val finalString = stringBuffer.toString()
-                arr_getCity = ArrayList<String>()
-                arr_getCityNo = ArrayList<String>()
-                val jsonArray = JSONArray(finalString)
-                for (i in 0 until jsonArray.length()) {
-                    val finalJasonObject = jsonArray.getJSONObject(i)
-                    arr_getCity.add(finalJasonObject.getString("CityName"))
-                    arr_getCityNo.add(finalJasonObject.getString("CityNo"))
-                }
-            } catch (e: MalformedURLException) {
-                e.printStackTrace()
-            } catch (e: IOException) {
-                e.printStackTrace()
+                return stringBuffer.toString()
+
             } catch (e: JSONException) {
                 e.printStackTrace()
+                return ""
             }
-            return null
         }
 
         override fun onPostExecute(result: String?) {
             super.onPostExecute(result)
             progressDialog.dismiss()
-            arr_getCity.add(0, "---Employee City---")
-            if (arr_getCity != null) {
+            if (result != "") {
+                arr_getCity = ArrayList<String>()
+                arr_getCityNo = ArrayList<String>()
+                val jsonArray = JSONArray(result)
+                for (i in 0 until jsonArray.length()) {
+                    val finalJasonObject = jsonArray.getJSONObject(i)
+                    arr_getCity.add(finalJasonObject.getString("CityName"))
+                    arr_getCityNo.add(finalJasonObject.getString("CityNo"))
+                }
                 if (arr_getCity.size > 0) {
                     Toast.makeText(
                         this@MainActivity,
-                        "${arr_getCity.toString()}",
+                        "$arr_getCity",
                         Toast.LENGTH_SHORT
                     ).show()
                 } else {
-                    Toast.makeText(this@MainActivity, "Network Erorr...!", Toast.LENGTH_SHORT)
-                        .show()
+                    Toast.makeText(this@MainActivity, "Record is Empty", Toast.LENGTH_SHORT).show()
                 }
+            } else {
+                Toast.makeText(this@MainActivity, "Network Error...!", Toast.LENGTH_SHORT).show()
             }
+
+
         }
     }
 }
