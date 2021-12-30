@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity() {
             }
         }, delay);*/
 
-        BackgroundGetCityTask().execute("https://aampower.app/data/getcity.aspx")
+        BackgroundGetCityTask().execute(Api.run { BASE_URL + GET_CITY })
     }
 
     @SuppressLint("StaticFieldLeak")
