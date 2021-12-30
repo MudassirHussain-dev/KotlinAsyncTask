@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity() {
             }
         }, delay);*/
 
-        BackgroundGetCityTask().execute(Api.run { BASE_URL + GET_CITY })
+        BackgroundGetCityTask().execute(Api.GET_CITY)
     }
 
     @SuppressLint("StaticFieldLeak")
